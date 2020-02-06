@@ -1,13 +1,14 @@
 package q6.Bakery;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class PIncrement implements Runnable {
 
     static int counter;
     static int max = 1200000;
     static BakeryLock bLock;
-    static ArrayList<Thread> threads;
+    static Thread[] threads;
     static int numProc;
 
     PIncrement(int c) {
@@ -18,17 +19,17 @@ public class PIncrement implements Runnable {
         // your implementation goes here
         PIncrement p = new PIncrement(c);
         bLock = new BakeryLock(numThreads);
-        threads = new ArrayList<>();
+        threads = new Thread[numThreads];
 
         try {
             for (int i = 0; i < numThreads; i++) {
-                Thread t = new Thread(p);
-                threads.add(t);
-                threads.get(i).start();
+                // Thread t = new Thread(p);
+                threads[i] = new Thread(p);
+                threads[i].start();
             }
 
             for (int i = 0; i < numThreads; i++) {
-                threads.get(i).join();
+                threads[i].join();
             }
         }
 
@@ -42,7 +43,7 @@ public class PIncrement implements Runnable {
     @Override
     public void run() {
         // TODO Auto-generated method stub
-        int index = threads.indexOf(Thread.currentThread());
+        int index = Arrays.asList(threads).indexOf(Thread.currentThread());
         while(counter < max) {
             bLock.lock(index);
             if(counter < max) {
