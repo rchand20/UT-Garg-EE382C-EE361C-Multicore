@@ -1,6 +1,8 @@
 package q2.b;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PIncrement implements Runnable {
 
@@ -59,40 +61,41 @@ public class PIncrement implements Runnable {
 }
 
 class LamportLock {
-    int x;
-    int y;
-    boolean[] flag;
+    AtomicInteger x;
+    AtomicInteger y;
+    AtomicBoolean[] flag;
 
     public LamportLock(int numThreads) {
-        x = -1;
-        y = -1;
-        flag = new boolean[numThreads];
+        x = new AtomicInteger(-1);
+        y = new AtomicInteger(-1);
+        flag = new AtomicBoolean[numThreads];
+        Arrays.fill(flag, new AtomicBoolean());
     }
 
     public void lock(int i) {
         while(true) {
-            flag[i] = true;
-            x = i;
-            if(y != -1) {
-                flag[i] = false;
-                while(y != -1) {
-                    // System.out.println("waiting for y to become -1 in thread " + i);
+            flag[i].set(true);
+            x.set(i);
+            if(y.get() !=-1) {
+                flag[i].set(false);
+                while(y.get() != -1) {
+            
                 }
                 continue;
             }
             else {
-                y = i;
-                if(x == i) return;
+                y.set(i);
+                if(x.get() == i) return;
                 else {
-                    flag[i] = false;
+                    flag[i].set(false);
                     for(int j = 0; j < flag.length; j++) {
                         if (j != i) {
-                            while(flag[j]) {}
+                            while(flag[j].get()) {}
                         }
                     }
-                    if(y == i) return;
+                    if(y.get() == i) return;
                     else {
-                        while (y != -1) {}
+                        while (y.get() != -1) {}
                         continue;
                     }
                 }
@@ -101,7 +104,7 @@ class LamportLock {
     }
 
     public void unlock(int i) {
-        y = -1;
-        flag[i] = false;
+        y.set(-1);
+        flag[i].set(false);
     }
 }
