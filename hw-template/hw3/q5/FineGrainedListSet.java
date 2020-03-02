@@ -62,11 +62,67 @@ public class FineGrainedListSet implements ListSet {
 
     public boolean remove(int value) {
         // implement your remove method here
+        head.lock.lock();
+        Node prev = head;
+        Node curr = head.next;
+
+        if(curr != null) {
+            curr.lock.lock();
+        }
+
+        while(curr != null) {
+            if(curr.value == value) {
+                prev.next = curr.next;
+                curr.lock.unlock();
+                prev.lock.unlock();
+
+                return true;
+            }
+
+            prev.lock.unlock();
+ 
+            prev = curr;
+            curr = prev.next;
+
+            if(curr != null) {
+                curr.lock.lock();
+            }
+        }
         return false;
     }
 
     public boolean contains(int value) {
         // implement your contains method here
+        head.lock.lock();
+        Node prev = head;
+        Node curr = head.next;
+
+        if(curr != null) {
+            curr.lock.lock();
+        } else {
+            return false;
+        }
+
+        while(curr != null) {
+            if(curr.value == value) {
+                curr.lock.unlock();
+                prev.lock.unlock();
+                return false;
+            }
+            if(curr.value >= value) {
+                return (curr.value == value);
+            }  
+
+            prev.lock.unlock();
+ 
+            prev = curr;
+            curr = prev.next;
+
+            if(curr != null) {
+                curr.lock.lock();
+            }
+        }
+
         return false;
     }
 
