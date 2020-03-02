@@ -46,7 +46,6 @@ public class CoarseGrainedListSet implements ListSet {
 
     public boolean remove(int value) {
         // implement your remove method here
-        Node n = new Node(value);
         lock.lock();
 
         Node prev = head;
@@ -54,24 +53,21 @@ public class CoarseGrainedListSet implements ListSet {
 
         while(curr != null) {
             if(curr.value == value) {
-                prev.next = curr.next;
-                lock.unlock();
-                return true;
+                break;
             }
             if(curr.value > value) {
-                break;
+                return false;
             }  
 
             prev = curr;
             curr = curr.next;
         }
 
-        n.next = curr;
-        prev.next = n;
+        prev.next = curr.next;
 
         lock.unlock();
 
-        return false;
+        return true;
     }
 
     public boolean contains(int value) {
