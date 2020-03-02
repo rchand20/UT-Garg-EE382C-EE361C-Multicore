@@ -1,4 +1,4 @@
-package queue;
+package q6.queue;
 
 public class LockQueue implements MyQueue {
     // you are free to add members

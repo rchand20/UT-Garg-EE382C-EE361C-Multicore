@@ -48,7 +48,7 @@ public class SimpleTest {
             sb.append(i).append(",");
         }
         System.out.println(list.toString());
-        Assert.assertEquals(list.toString(), sb.toString());
+        Assert.assertEquals(sb.toString(), list.toString());
     }
 
     private class MyThread implements Runnable {

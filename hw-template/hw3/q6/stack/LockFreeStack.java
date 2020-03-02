@@ -1,4 +1,4 @@
-package stack;
+package q6.stack;
 
 public class LockFreeStack implements MyStack {
     // you are free to add members
