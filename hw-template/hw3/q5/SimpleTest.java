@@ -23,8 +23,8 @@ public class SimpleTest {
         checkNode(0, 3000, list);
         Assert.assertEquals(true, list.contains(3000));
         Assert.assertEquals(false, list.contains(3002));
-        // list.remove(3000);
-        // Assert.assertEquals(false, list.contains(3000));
+        list.remove(3000);
+        Assert.assertEquals(false, list.contains(3000));
 
     }
 

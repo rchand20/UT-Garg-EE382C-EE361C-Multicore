@@ -107,11 +107,8 @@ public class FineGrainedListSet implements ListSet {
             if(curr.value == value) {
                 curr.lock.unlock();
                 prev.lock.unlock();
-                return false;
+                return true;
             }
-            if(curr.value >= value) {
-                return (curr.value == value);
-            }  
 
             prev.lock.unlock();
  
