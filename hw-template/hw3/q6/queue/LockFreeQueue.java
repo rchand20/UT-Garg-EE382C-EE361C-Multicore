@@ -1,7 +1,6 @@
 package q6.queue;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.atomic.AtomicStampedReference;
 
 public class LockFreeQueue implements MyQueue {
     // you are free to add members
@@ -11,8 +10,8 @@ public class LockFreeQueue implements MyQueue {
     public LockFreeQueue() {
         // implement your constructor here
         Node node = new Node(null);
-        head.set(node);
-        tail.set(node);
+        head = new AtomicReference<Node>(node);
+        tail = new AtomicReference<Node>(node);
     }
 
     public boolean enq(Integer value) {
@@ -20,11 +19,16 @@ public class LockFreeQueue implements MyQueue {
         Node node = new Node(value);
         while(true) {
             Node tempTail = tail.get();
-            Node next = tempTail.next.get();
-            if(next == null) {
-                if(tail.compareAndSet(tempTail, node)) return true;
-            } else {
-                tail.compareAndSet(tempTail, next);
+            if(tempTail == tail.get()){
+                if(tempTail.next.get() == null) {
+                    if(tempTail.next.compareAndSet(null, node)) {
+                        tail.compareAndSet(tempTail, node);
+                        return true;
+                    } 
+                } else {
+                    Node tailNext = tempTail.next.get();
+                    tail.compareAndSet(tempTail, tailNext);
+                }
             }
         }
     }
@@ -42,8 +46,9 @@ public class LockFreeQueue implements MyQueue {
                     }
                     tail.compareAndSet(tempTail, next);
                 }
-            } else {
-                if(head.compareAndSet(tempHead, next)) return next.value;
+                else {
+                    if(head.compareAndSet(tempHead, next)) return next.value;
+                }
             }
 
         }
@@ -55,7 +60,7 @@ public class LockFreeQueue implements MyQueue {
 
         public Node(Integer x) {
             value = x;
-            next = null;
+            next = new AtomicReference<Node>(null);
         }
     }
 }

@@ -28,7 +28,7 @@ public class LockQueue implements MyQueue {
         if(value == null) {
             return false;
         }
-
+        enqLock.lock();
         try {
             Node e = new Node(value);
             tail.next = e;
