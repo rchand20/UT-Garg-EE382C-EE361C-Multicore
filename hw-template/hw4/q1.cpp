@@ -7,24 +7,28 @@ using namespace std;
 
 int main()
 {
-    vector<string> msg = {"Hello!", "C++", "World", "from", "VS Code", "and the C++ extension!"};
-
-    for (const string& word : msg)
-    {
-        cout << word << " ";
-    }
-    cout << endl;
-
     vector<int> data;
-
     ifstream infile;
     infile.open("inp.text");
-    if(!infile.is_open()) std::cout << "ERROR: File Open" << '\n';
 
-    while (infile.good()){
-        char cNum[10];
-        infile.getline(cNum, 256, ',');
-        cout << atoi(cNum) << " ";
+    if (infile.is_open())
+    {
+        while (infile.good()){
+            char cNum[10];
+            infile.getline(cNum, 256, ',');
+            int num = atoi(cNum);
+            data.push_back(num);
+            // cout << num << " ";
+        }
+        infile.close();
     }
-    infile.close();
+    else 
+    {
+        cout << "Error opening file";
+    }
+
+    for (int x = 0; x < data.size(); ++x) 
+    {
+        cout << data[x] << " ";
+    }
 }
