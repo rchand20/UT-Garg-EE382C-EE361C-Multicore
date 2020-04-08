@@ -6,15 +6,31 @@
 
 using namespace std;
 
+__global__ void odd_count(int *arr, unsigned int *d_count, int length)
+{
+  int idx = blockDim.x * blockIdx.x + threadIdx.x;
+  if (idx >= length)
+  {
+    return;
+  }
+
+  if (arr[idx] % 2 != 0)
+  {
+    atomicAdd(d_count, 1);
+  }
+}
+
 __global__ void mark(int *arr, int *predicates, int length)
 {
   int idx = blockDim.x * blockIdx.x + threadIdx.x;
   if (idx >= length)
+  {
     return;
+  }
   predicates[idx] = arr[idx] % 2 ? 1 : 0;
 }
 
-__global__ void block_scan(int *output, int *predicates, int *sums, int n)
+__global__ void scan(int *output, int *predicates, int *sums, int n)
 {
   int bid = blockIdx.x;
   int tid = threadIdx.x;
@@ -99,7 +115,7 @@ int main()
 {
   vector<int> data;
   ifstream infile;
-  infile.open("inp.text");
+  infile.open("inp.txt");
 
   if (infile.is_open())
   {
@@ -129,8 +145,10 @@ int main()
   int *d_sums;
   int *d_inc;
   int *input_copy;
+  unsigned int *d_count;
 
   int *output = (int *)malloc(size1);
+  unsigned int *count = (unsigned int *)malloc(sizeof(unsigned int));
 
   int blocks = size / 1024;
   if (size % 1024 != 0)
@@ -140,6 +158,7 @@ int main()
   const int sharedSize = 2 * 1024 * sizeof(int);
 
   cudaMalloc((void **)&d_sums, blocks * sizeof(int));
+  cudaMalloc((void **)&d_count, sizeof(unsigned int));
   cudaMalloc((void **)&d_inc, blocks * sizeof(int));
   cudaMalloc((void **)&d_dummy_blocks_sums, blocks * sizeof(int));
   cudaMalloc((void **)&d_output, size1);
@@ -149,27 +168,49 @@ int main()
   cudaMalloc((void **)&d_result, size1);
 
   cudaMemcpy(d_input, data.data(), size1, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_count, 0, sizeof(unsigned int), cudaMemcpyHostToDevice);
   cudaMemcpy(input_copy, data.data(), size1, cudaMemcpyHostToDevice);
 
+  odd_count<<<blocks, 1024>>>(input_copy, d_count, size);
   mark<<<blocks, 1024>>>(d_input, d_predicates, size);
-  block_scan<<<blocks, 512, sharedSize>>>(d_output, d_predicates, d_sums, 1024);
-  block_scan<<<1, (blocks + 1) / 2, sharedSize>>>(d_inc, d_sums, d_dummy_blocks_sums, 1024);
+  scan<<<blocks, 512, sharedSize>>>(d_output, d_predicates, d_sums, 1024);
+  scan<<<1, (blocks + 1) / 2, sharedSize>>>(d_inc, d_sums, d_dummy_blocks_sums, 1024);
   add<<<blocks, 1024>>>(d_output, 1024, d_inc);
   compact<<<size, 1024>>>(d_result, input_copy, d_predicates, d_output, size);
 
-  cudaMemcpy(output, input_copy, size1, cudaMemcpyDeviceToHost);
-  for (int i = 0; i < size; i++)
+  cudaMemcpy(count, d_count, sizeof(unsigned int), cudaMemcpyDeviceToHost);
+  cudaMemcpy(output, d_result, *count * sizeof(int), cudaMemcpyDeviceToHost);
+
+  ofstream outfile;
+  outfile.open("q3.txt");
+
+  if (outfile.is_open())
   {
-    cout << output[i] << ", ";
+
+    for (int i = 0; i < *count; i++)
+    {
+      outfile << output[i] << ", ";
+    }
+
+    outfile.close();
   }
+  else
+  {
+    cout << "Error opening file";
+  }
+
   cudaDeviceSynchronize();
 
   cudaFree(d_output);
   cudaFree(d_input);
   cudaFree(d_sums);
+  cudaFree(d_count);
   cudaFree(d_inc);
   cudaFree(d_predicates);
   cudaFree(d_dummy_blocks_sums);
 
   free(output);
+  free(count);
+
+  return 0;
 }

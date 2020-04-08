@@ -106,7 +106,7 @@ int main()
 {
     vector<int> data;
     ifstream infile;
-    infile.open("inp.text");
+    infile.open("inp.txt");
 
     if (infile.is_open())
     {
@@ -174,9 +174,23 @@ int main()
     }
 
     cudaMemcpy(output, d_input, size1, cudaMemcpyDeviceToHost);
-    for (int i = 0; i < size; i++)
+
+    ofstream outfile;
+    outfile.open("q4.txt");
+
+    if (outfile.is_open())
     {
-        cout << output[i] << ", ";
+
+        for (int i = 0; i < size; i++)
+        {
+            outfile << output[i] << ", ";
+        }
+
+        outfile.close();
+    }
+    else
+    {
+        cout << "Error opening file";
     }
 
     cudaFree(d_f);
