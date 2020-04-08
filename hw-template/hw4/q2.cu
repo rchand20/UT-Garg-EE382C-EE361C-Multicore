@@ -106,7 +106,8 @@ __global__ void countEntriesPartC(int *B, int *C, int size)
 
 	C[2 * tid] = smem[2 * tid + 1];
 	C[2 * tid + 1] = smem[2 * tid + 2];
-	if((2 * tid + 1) == 9) {
+	if ((2 * tid + 1) == 9)
+	{
 		C[2 * tid + 1] = smem[2 * tid + 1] + B[9];
 	}
 }
@@ -164,23 +165,76 @@ int main()
 	cudaMemcpy(B2, d_B2, Bsize, cudaMemcpyDeviceToHost);
 	cudaMemcpy(C, d_C, Bsize, cudaMemcpyDeviceToHost);
 
-	for (int i = 0; i < 10; ++i)
-	{
-		cout << B[i] << ' ';
-	}
-	cout << '\n';
+	// for (int i = 0; i < 10; ++i)
+	// {
+	// 	cout << B[i] << ' ';
+	// }
+	// cout << '\n';
 
-	for (int i = 0; i < 10; ++i)
-	{
-		cout << B2[i] << ' ';
-	}
-	cout << '\n';
+	// for (int i = 0; i < 10; ++i)
+	// {
+	// 	cout << B2[i] << ' ';
+	// }
+	// cout << '\n';
 
-	for (int i = 0; i < 10; ++i)
+	// for (int i = 0; i < 10; ++i)
+	// {
+	// 	cout << C[i] << ' ';
+	// }
+	// cout << '\n';
+
+	ofstream outfile;
+	outfile.open("q2a.txt");
+
+	if (outfile.is_open())
 	{
-		cout << C[i] << ' ';
+
+		for (int i = 0; i < 10; i++)
+		{
+			outfile << 	B[i] << ", ";
+		}
+
+		outfile.close();
 	}
-	cout << '\n';
+	else
+	{
+		cout << "Error opening file";
+	}
+
+	outfile.open("q2b.txt");
+
+	if (outfile.is_open())
+	{
+
+		for (int i = 0; i < 10; i++)
+		{
+			outfile << 	B2[i] << ", ";
+		}
+
+		outfile.close();
+	}
+	else
+	{
+		cout << "Error opening file";
+	}
+
+
+	outfile.open("q2c.txt");
+
+	if (outfile.is_open())
+	{
+
+		for (int i = 0; i < 10; i++)
+		{
+			outfile << 	C[i] << ", ";
+		}
+
+		outfile.close();
+	}
+	else
+	{
+		cout << "Error opening file";
+	}
 
 	// Cleanup
 	free(A);
