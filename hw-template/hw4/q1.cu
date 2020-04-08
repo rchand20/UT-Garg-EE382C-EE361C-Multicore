@@ -37,15 +37,12 @@ __global__ void arrMin(int *min, int *A, int *size) {
 	}
 }
 
-__global__ void makeB(int *A, int *B, int *size) {
-	int tid = threadIdx.x;
-	
+__global__ void makeB(int *A, int *B, int size) {
+	int i = blockIdx.x * blockDim.x + threadIdx.x; 
 
-	for(int i = blockIdx.x * blockDim.x + tid; i < *size; i += blockDim.x) {
+	if(i < size) {
 		B[i] = A[i] % 10;
 	}	
-
-	__syncthreads();
 }
 
 int main() {
@@ -88,8 +85,10 @@ int main() {
 	int temp = data.size();
 	cudaMemcpy(d_size, &temp, sizeof(int), cudaMemcpyHostToDevice);
 
-	arrMin<<<N/BLOCK_SIZE, BLOCK_SIZE>>>(d_min, d_A, d_size);	
-	makeB<<<N/BLOCK_SIZE, BLOCK_SIZE>>>(d_A, d_B, d_size);
+	arrMin<<<data.size() / BLOCK_SIZE + 1, BLOCK_SIZE>>>(d_min, d_A, d_size);	
+	makeB<<<data.size() / BLOCK_SIZE + 1, BLOCK_SIZE>>>(d_A, d_B, temp);
+
+	cudaDeviceSynchronize();
 	
 	// Copy result back to host
 	cudaMemcpy(min, d_min, sizeof(int), cudaMemcpyDeviceToHost);
